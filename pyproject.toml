@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "pytest_case"
+version = "0.1.0"
+description = ""
+authors = ["eitanwass <eitanwass@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pytest = "^8.3.3"
+six = "^1.16.0"
+pytest-parametrization = "^2022.2.1"
+
+
+[tool.poetry.group.dev.dependencies]
+ipdb = "^0.13.13"
+pytest-parametrization = "^2022.2.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
