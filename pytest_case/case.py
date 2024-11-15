@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections import defaultdict, namedtuple
+from collections import defaultdict
 from operator import itemgetter
 from typing import Any, Callable, Dict, Iterable, List, Sequence, Tuple
 
@@ -9,6 +9,9 @@ import pytest
 
 CASE_MARKER = "pytest_case"
 PYTEST_MARKER = "pytestmark"
+
+
+__all__ = ["case"]
 
 
 def _is_case(func: Callable[[Any], Any]) -> bool:
@@ -77,7 +80,7 @@ def get_func_optional_params(func: Callable[[Any], Any]) -> Dict[str, Any]:
 def case(name: str, *args: Any, **kwargs: Any) -> Callable[[Any], Any]:
     marks = None
     if "marks" in kwargs:
-        marks = kwargs.pop("marks")
+        marks = kwargs.pop("marks") # noqa: F841
 
     def decorator(func: Callable[[Any], Any]) -> Callable[[Any], Any]:
         ids = []
