@@ -75,6 +75,10 @@ def get_func_optional_params(func: Callable[[Any], Any]) -> Dict[str, Any]:
 
 
 def case(name: str, *args: Any, **kwargs: Any) -> Callable[[Any], Any]:
+    marks = None
+    if "marks" in kwargs:
+        marks = kwargs.pop("marks")
+
     def decorator(func: Callable[[Any], Any]) -> Callable[[Any], Any]:
         ids = []
 
@@ -102,6 +106,9 @@ def case(name: str, *args: Any, **kwargs: Any) -> Callable[[Any], Any]:
             args_dict = dict(zip(argnames, list(zip(*argvalues))))
             func = unwrap_func(func)
             func_optional_params = get_func_optional_params(func)
+
+        if "marks" in argnames:
+            raise TypeError("Function parameters cannot contain reserved keyword 'marks'")
 
         ids = [name] + ids
 

@@ -43,18 +43,26 @@ def test__case__too_many_parameters() -> None:
         case("name", 1, 2)(func)
 
 
-@case("")
+def test__case__reserved_kw_marks() -> None:
+    def func(marks: Any) -> None:
+        pass
+
+    with pytest.raises(TypeError):
+        case("name", 1)(func)
+
+
+@case("optional_param_default")
 def test__case__argvalue_priority__optional_param_default(a: int = 1, b: int = 2) -> None:
     assert 1 == a and 2 == b
 
-@case("", 10)
+@case("arg_override_default", 10)
 def test__case__argvalue_priority__arg_override_default(a: int = 1, b: int = 2) -> None:
     assert 10 == a and 2 == b
 
-@case("", a=2)
+@case("kwarg_override_default", a=2)
 def test__case__argvalue_priority__kwarg_override_default(a: int = 1, b: int = 2) -> None:
     assert 2 == a and b == 2
 
-@case("", 3, b=4)
+@case("kwarg_override_arg", 3, b=4)
 def test__case__argvalue_priority__kwarg_override_arg(a: int = 1, b: int = 2) -> None:
     assert 3 == a and 4 == b

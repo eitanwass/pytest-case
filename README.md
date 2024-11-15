@@ -7,7 +7,7 @@ from pytest_case import case
 
 
 def add_test_cases() -> Generator[Tuple[int, int, int], None]:
-    return (
+    yield (
         n
         for n in [
             (3, 3, 6),
@@ -17,14 +17,26 @@ def add_test_cases() -> Generator[Tuple[int, int, int], None]:
     )
 
 
-@case(1, 2, 3)
-@case({
-    "a": 2,
-    "b": 2,
-    "expected": "4",
-})
-@case('a', 1, pytest.mark.xfail)
+@case("regular args", 4, 2, 2)
+@case(
+    "params as kwargs",
+    a=2,
+    b=2,
+    expected=1,
+)
+@case('with expected fail', 1, 0, mark=pytest.mark.xfail)
 @case(add_test_cases())
-def test__add(a, b, expected) -> None:
-    assert expected == a + b
+def test__divide(a, b, expected) -> None:
+    assert expected == a / b
 ```
+
+
+# Project Roadmap:
+These are the the predicted checkpoints for this project:
+
+- **Test Marks**
+    Marks that are currently supported by pytest, such as: xfail, skip, ...
+- **Tests Cases Generators**
+    Provide a generator function to the `case` to automatically generate cases.
+- **Tests Samples Generation**
+    Generate parameters to catch edge-cases, based on restrictions or datasets.
