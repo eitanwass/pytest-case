@@ -1,12 +1,16 @@
 # pytest-case
 
+![workflow success](https://github.com/eitanwass/pytest-case/actions/workflows/pytest-case-ci-cd.yml/badge.svg) [![codecov](https://codecov.io/github/eitanwass/pytest-case/graph/badge.svg?token=07NGAILDL2)](https://codecov.io/github/eitanwass/pytest-case) 
+
+# Usage examples:
+
 ```python
 import pytest
 from typing import Tuple, Generator
 from pytest_case import case
 
 
-def add_test_cases() -> Generator[Tuple[int, int, int], None]:
+def add_test_cases() -> Generator[Tuple[int, int, w], None]:
     yield (
         n
         for n in [
