@@ -20,6 +20,9 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
 addopts = "--cov=pytest_case --cov-report term-missing --no-cov-on-fail"
+markers = [
+    "case: marks a parametrized test case"
+]
 
 [tool.coverage.run]
 omit = ["tests/*"]

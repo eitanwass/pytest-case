@@ -1,126 +1,112 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from operator import itemgetter
-from typing import Any, Callable, Dict, Iterable, List, Sequence, Tuple
+from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence
 
 import pytest
 
-
-CASE_MARKER = "pytest_case"
-PYTEST_MARKER = "pytestmark"
+from pytest_case.consts import PYTEST_MARKER
+from pytest_case.types import UnwrappedFunc
+from pytest_case.utils.case_utils import is_case
+from pytest_case.utils.func_utils import get_func_optional_params, get_func_param_names
 
 
 __all__ = ["case"]
-
-
-def _is_case(func: Callable[[Any], Any]) -> bool:
-    return getattr(func, CASE_MARKER, False)
-
-
-def _extract_case_params(func: Callable[[Any], Any]) -> Tuple[List[str], Tuple[Any], List[Tuple[Any]]]:
-    # Assumming func is a case
-    extracted_mark = next(
-        (
-            mark
-            for mark in getattr(func, PYTEST_MARKER)
-            if mark.name == "parametrize"
-        ),
-        None
-    )
-
-    return itemgetter("ids", "argnames", "argvalues")(extracted_mark.kwargs)
 
 
 def wrap_func(
     ids: Sequence[str],     # TODO: Support dynamic func IDs
     argnames: Sequence[str],
     argvalues: Iterable[Sequence[object]],
-) -> Callable[[Any], Any]:
-    def wrapper(func: Callable[[Any], Any]) -> Callable[[Any], Any]:
+    defaults: Dict[str, Any],
+) -> Callable[..., Callable[..., Any]]:
+    def wrapper(func: Callable[..., Any]) -> Callable[..., Any]:
         """
         We wrap the function with `pytest.mark.parametrize` with every case so it will exist in the last case.
         We unwrap the mark for every wrapped case.
         """
-        parametrized_func = pytest.mark.parametrize(
+        return  pytest.mark.parametrize(
             ids=ids,
             argnames=argnames,
             argvalues=argvalues,
-        )(func)
-
-        setattr(parametrized_func, "pytest_case", True)
-
-        return parametrized_func
+        )(pytest.mark.case(defaults=defaults)(func))
     return wrapper
 
 
-def unwrap_func(func: Callable[[Any], Any]) -> Callable[[Any], Any]:
+def unwrap_func(func: Callable[[Any], Any]) -> UnwrappedFunc:
+    """
+    Unwraps a case function into its original function and its pytest-case components.
+
+    :param func: A function wrapped with `case`.
+    :return: A dataclass containing the original function and its pytest-case arguments.
+    """
+    func_markers: Optional[List[pytest.MarkDecorator]] = getattr(func, PYTEST_MARKER, None)
+    if func_markers is None:
+        # Assumming func is a case
+        raise AttributeError("Trying to unwrap a non-pytest function!")
+
+    case_kwargs = {}
+    extra_markers: List[pytest.MarkDecorator] = []
+    for mark in func_markers:
+        if mark.name in ["case", "parametrize"]:
+            case_kwargs.update(mark.kwargs)
+        else:
+            extra_markers.append(mark)
+
     delattr(func, PYTEST_MARKER)
-    return func
-
-
-def get_func_param_names(func: Callable[[Any], Any]) -> Tuple[str, ...]:
-    func_code = func.__code__
-    func_arg_count = func_code.co_argcount
-    return func_code.co_varnames[:func_arg_count]
-
-
-def get_func_optional_params(func: Callable[[Any], Any]) -> Dict[str, Any]:
-    func_params = get_func_param_names(func)
-    return dict(
-        reversed(list(
-            zip(
-                reversed(func_params),
-                reversed(func.__defaults__ or [])
-                )
-            ))
-        )
+    
+    return UnwrappedFunc(
+        unwrapped_func=func,
+        func_markers=extra_markers,
+        **case_kwargs
+    )
 
 
 def case(name: str, *args: Any, **kwargs: Any) -> Callable[[Any], Any]:
-    marks = None
-    if "marks" in kwargs:
-        marks = kwargs.pop("marks") # noqa: F841
+    marks = kwargs.pop("marks", None) # noqa: F841
 
     def decorator(func: Callable[[Any], Any]) -> Callable[[Any], Any]:
-        ids = []
+        if not callable(func):
+            raise TypeError(f"'{func}' is not a callable")
+        func_params = get_func_param_names(func)
+        if not len(func_params):
+            raise TypeError("Test function does not take any parameters")
+        if len(args) + len(kwargs) > len(func_params):
+            # Too many args
+            raise TypeError(
+                f"Test '{func.__name__}' expected {len(func_params)} but case got {len(args) + len(kwargs)} params"
+            )
 
+        ids = []
         argnames = []
-        func_optional_params: Dict[str, Any] = {}
+        defaults: Dict[str, Any] = {}
         args_dict = defaultdict(tuple)
 
-        if not _is_case(func):
-            all_func_params = get_func_param_names(func)
-
-            if len(args) + len(kwargs) > len(all_func_params):
-                # Too many args
-                raise TypeError(
-                    f"Test '{func.__name__}' expected {len(all_func_params)} but case got {len(args) + len(kwargs)} params"
-                )
-            
-            func_optional_params = get_func_optional_params(func)
-            func.__defaults__ = None
-            func_required_params = all_func_params[:len(all_func_params) - len(func_optional_params or [])]
-            # All the rest should be fixtures or will raise an error because tey are not provided
-
-            argnames = (*func_required_params, *func_optional_params.keys())
-        else:
-            ids, argnames, argvalues = _extract_case_params(func)
+        if is_case(func):
+            # Wrapping another case
+            func, _, ids, argnames, argvalues, defaults = unwrap_func(func)
             args_dict = dict(zip(argnames, list(zip(*argvalues))))
-            func = unwrap_func(func)
-            func_optional_params = get_func_optional_params(func)
+        else:
+            # If the wrapped function is a test function...
+            func_params = get_func_param_names(func)
+            defaults = get_func_optional_params(func)
+            func_required_params = func_params[:len(func_params) - len(defaults)]
+            # All the rest should be fixtures or will raise an error because tey are not provided
+            argnames = (*func_required_params, *defaults.keys())
 
         if "marks" in argnames:
             raise TypeError("Function parameters cannot contain reserved keyword 'marks'")
 
         ids = [name] + ids
 
+        func.__defaults__ = None
+
         for arg_index, argname in enumerate(argnames):
             new_argvalue = None
 
-            if argname in func_optional_params:
+            if argname in defaults:
                 # Has default value - use it
-                new_argvalue = func_optional_params[argname]
+                new_argvalue = defaults[argname]
             
             if arg_index < len(args):
                 # Provided in args - use it
@@ -140,6 +126,7 @@ def case(name: str, *args: Any, **kwargs: Any) -> Callable[[Any], Any]:
             ids=ids,
             argnames=list(args_dict.keys()),
             argvalues=list(zip(*args_dict.values())),
+            defaults=defaults,
         )(func)
     
     return decorator

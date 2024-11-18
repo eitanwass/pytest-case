@@ -29,6 +29,7 @@ def test__add__kwarg_params(a, b, expected) -> None:
     assert expected == a + b
 
 
+@case("Another implicit optional", 1, 4)
 @case("Explicit optional", 2, 4, 6)
 @case("Implicit optional", 2, 3)
 def test__add__with_optional(a, b, expected=5) -> None:
