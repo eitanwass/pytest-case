@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence
+from functools import reduce
+from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence, Union, overload
 
 import pytest
 
@@ -12,6 +13,13 @@ from pytest_case.utils.func_utils import get_func_optional_params, get_func_para
 
 
 __all__ = ["case"]
+
+
+@overload
+def case(cases_generator: Iterable[Any]) -> Callable[..., Any]: ...
+
+@overload
+def case(name: str, *args: Any, **kwargs: Any) -> Callable[..., Any]: ...
 
 
 def wrap_func(
@@ -62,10 +70,26 @@ def unwrap_func(func: Callable[[Any], Any]) -> UnwrappedFunc:
     )
 
 
-def case(name: str, *args: Any, **kwargs: Any) -> Callable[[Any], Any]:
+def _generator_case(gen: Iterable[Any], func: Callable[..., Any], **kwargs: Any) -> Callable[..., Any]:
+    case_name_template = kwargs.get("name", "{_index}")
+    return reduce(
+        lambda acc, params: case(
+            case_name_template.format(*params[1], _index=params[0]), 
+            *params[1]
+        )(acc),
+        enumerate(gen),
+        func
+    )
+
+def case(name_or_gen: Union[str, Iterable[Any]], *args: Any, **kwargs: Any) -> Callable[..., Any]:
     marks = kwargs.pop("marks", None) # noqa: F841
 
     def decorator(func: Callable[[Any], Any]) -> Callable[[Any], Any]:
+        # Can't check for `Iterable` because `str` is also iterable
+        if not isinstance(name_or_gen, str):
+            return _generator_case(name_or_gen, func, **kwargs)
+        name = name_or_gen
+
         if not callable(func):
             raise TypeError(f"'{func}' is not a callable")
         func_params = get_func_param_names(func)
@@ -120,7 +144,7 @@ def case(name: str, *args: Any, **kwargs: Any) -> Callable[[Any], Any]:
                 # Should never happen.
                 raise TypeError("Something weird has happened...")
 
-            args_dict[argname] += (new_argvalue, )
+            args_dict[argname] = (new_argvalue, ) + args_dict[argname]
 
         return wrap_func(
             ids=ids,
