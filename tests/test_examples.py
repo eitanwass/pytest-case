@@ -1,3 +1,4 @@
+from itertools import product
 from typing import Any
 
 import pytest
@@ -33,6 +34,7 @@ def test__add__kwarg_params(a, b, expected) -> None:
 @case("Explicit optional", 2, 4, 6)
 @case("Implicit optional", 2, 3)
 def test__add__with_optional(a, b, expected=5) -> None:
+    print(a, b, expected)
     assert expected == a + b
 
 
@@ -67,3 +69,11 @@ def test__case__argvalue_priority__kwarg_override_default(a: int = 1, b: int = 2
 @case("kwarg_override_arg", 3, b=4)
 def test__case__argvalue_priority__kwarg_override_arg(a: int = 1, b: int = 2) -> None:
     assert 3 == a and 4 == b
+
+@case(((x, x ** 2) for x in range(10)), name="{} ** 2 == {}")
+def test__case__generator(a, b) -> None:
+    assert a ** 2 == b
+
+@case(product(("a", "b"), ("1", "2")), name="({}, {})")
+def test__case__product(a, b) -> None:
+    assert a in ("a", "b") and b in ("1", "2")
