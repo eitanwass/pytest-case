@@ -1,9 +1,12 @@
 [tool.poetry]
 name = "pytest_case"
-version = "0.1.0"
-description = ""
-authors = ["eitanwass <eitanwass@gmail.com>"]
+version = "0.1.1"
+description = "A clean, modern, wrapper for pytest.mark.parametrize"
+authors = ["Ethan Wass <eitanwass@gmail.com>"]
 readme = "README.md"
+license = "Apache-2.0"
+repository = "https://github.com/eitanwass/pytest-case"
+keywords = ["pytest", "parametrize", "case", "test"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
