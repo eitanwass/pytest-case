@@ -1,6 +1,6 @@
 # pytest-case
 
-![workflow success](https://github.com/eitanwass/pytest-case/actions/workflows/pytest-case-ci-cd.yml/badge.svg) [![codecov](https://codecov.io/github/eitanwass/pytest-case/graph/badge.svg?token=07NGAILDL2)](https://codecov.io/github/eitanwass/pytest-case) 
+![workflow success](https://github.com/eitanwass/pytest-case/actions/workflows/pytest-case-ci.yml/badge.svg) [![codecov](https://codecov.io/github/eitanwass/pytest-case/graph/badge.svg?token=07NGAILDL2)](https://codecov.io/github/eitanwass/pytest-case) 
 
 ![PyPI - Downloads](https://img.shields.io/pypi/dm/pytest-case) [![PyPI - Version](https://img.shields.io/pypi/v/pytest-case)](https://pypi.org/project/pytest-case)
 
