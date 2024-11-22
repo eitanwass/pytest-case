@@ -29,3 +29,7 @@ markers = [
 
 [tool.coverage.run]
 omit = ["tests/*"]
+
+[tool.ruff]
+lint.select = ["E", "F", "B", "W"]
+line-length = 100

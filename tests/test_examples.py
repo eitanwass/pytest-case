@@ -16,12 +16,12 @@ def test__add__single_simple_case(a, b, expected) -> None:
 def test__add__multiple_arg_cases(a, b, expected) -> None:
     assert expected == a + b
 
-@case("first case", 
+@case("first case",
     a=1,
     b=2,
     expected=3,
 )
-@case("second case", 
+@case("second case",
     a=5,
     b=6,
     expected=11,
