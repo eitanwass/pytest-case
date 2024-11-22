@@ -57,7 +57,7 @@ def test__browser_os_compatibility(browser: str, operating_system: str) -> None:
 # Project Roadmap:
 These are the the predicted checkpoints for this project:
 
-- [ ] **Test Marks**
+- [x] **Test Marks**
     Marks that are currently supported by pytest, such as: xfail, skip, ...
 - [x] **Tests Cases Generators**
     Provide a generator function to the `case` to automatically generate cases.
