@@ -77,3 +77,9 @@ def test__case__generator(a, b) -> None:
 @case(product(("a", "b"), ("1", "2")), name="({}, {})")
 def test__case__product(a, b) -> None:
     assert a in ("a", "b") and b in ("1", "2")
+
+@case("should pass", 1)
+@case("should skip", 2, marks=pytest.mark.skip)
+@case("should fail", -1, marks=pytest.mark.xfail(reason="This number is negative"))
+def test__case__marking(a: int) -> None:
+    assert a > 0
