@@ -1,6 +1,6 @@
 
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, Iterable, List, Tuple
+from typing import Any, Callable, Dict, List, Tuple
 
 import pytest
 from _pytest.mark import ParameterSet
@@ -12,6 +12,6 @@ class UnwrappedFunc:
     func_markers: List[pytest.MarkDecorator]
 
     argnames: Tuple[str]
-    argvalues: Iterable[ParameterSet]
+    argvalues: List[ParameterSet]
 
     defaults: Dict[str, Any]
