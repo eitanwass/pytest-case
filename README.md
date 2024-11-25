@@ -31,13 +31,21 @@ def add_test_cases() -> Generator[Tuple[int, int, int]]:
     b=2,
     expected=1,
 )
-@case('with expected fail', 1, 0, mark=pytest.mark.xfail)
+@case('with expected fail', 1, 0, -1, mark=pytest.mark.xfail)
 @case(add_test_cases())
-def test__divide(a, b, expected) -> None:
+def test__divide(a: int, b: int, expected: int) -> None:
     assert expected == a / b
 ```
 
 # Features
+
+## Default Arguments Values
+```python
+@case("Check for Failure", val="Failure")
+@case("Check for success", val="Success", sanity="Success")
+def test__with_default(val: str, sanity: str = "Failure") -> None:
+    assert sanity == val
+```
 
 ## Generator Case
 ```python
@@ -54,12 +62,34 @@ def test__browser_os_compatibility(browser: str, operating_system: str) -> None:
     pass
 ```
 
+## Using Fixtures
+- Using pytest built-in `request` fixture.
+    ```python
+    def test__with_request_fixture(request: Any) -> None:
+        fixture_value = request.getfixturevalue("fixture_name")
+        ...
+    ```
+- Using [pytest-lazy-fixtures](https://github.com/dev-petrov/pytest-lazy-fixtures)
+    ```python
+    from pytest_case import case
+    from pytest_lazy_fixtures import lf
+
+
+    @case("Lazy Fixture Case", lf("fixture_name"))
+    def test__with_lf_cases(fixture_val: Any) -> None
+        ...
+    ```
+
 # Project Roadmap:
 These are the the predicted checkpoints for this project:
 
+- [x] **Test Arguments Default Values**
+    That would be cool!
 - [x] **Test Marks**
     Marks that are currently supported by pytest, such as: xfail, skip, ...
 - [x] **Tests Cases Generators**
     Provide a generator function to the `case` to automatically generate cases.
+- [x] **Use Fixtures**
+    Use fixtures in cases and tests
 - [ ] **Tests Samples Generation**
     Generate parameters to catch edge-cases, based on restrictions or datasets.
