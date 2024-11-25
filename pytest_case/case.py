@@ -110,7 +110,9 @@ def case(name_or_gen: Union[str, Iterable[Any]], *args: Any, **kwargs: Any) -> C
             # If wrapping a new test function
             func_params = get_func_param_names(func)
             defaults = get_func_optional_params(func)
-            func_required_params = func_params[: len(func_params) - len(defaults)]
+            func_required_params = func_params[: len(func_params) - len(defaults)][
+                : len(args) + len(kwargs)
+            ]
             # All the rest should be fixtures or will raise an error because tey are not provided
             argnames = (*func_required_params, *defaults.keys())
 

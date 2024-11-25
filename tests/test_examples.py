@@ -4,6 +4,8 @@ from typing import Any
 import pytest
 from pytest_case import case
 
+from pytest_lazy_fixtures import lf
+
 
 @case("default", 1, 2, 3)
 def test__add__single_simple_case(a, b, expected) -> None:
@@ -83,3 +85,13 @@ def test__case__product(a, b) -> None:
 @case("should fail", -1, marks=pytest.mark.xfail(reason="This number is negative"))
 def test__case__marking(a: int) -> None:
     assert a > 0
+
+
+@case("with lazy fixture", lf("lazy_fixture_val"))
+def test__case__with_fixture(lazy_fix: str) -> None:
+    assert "lazy_fixture" == lazy_fix
+
+
+def test__case__with_request(request: Any) -> None:
+    used_fixture = request.getfixturevalue("requested_fixture")
+    assert "request_val" == used_fixture
