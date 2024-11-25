@@ -1,5 +1,5 @@
 from itertools import product
-from typing import Any, Optional
+from typing import Any
 
 import pytest
 from pytest_case import case
