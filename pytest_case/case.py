@@ -84,6 +84,64 @@ def _generator_case(
 def case(name_or_gen: Union[str, Iterable[Any]], *args: Any, **kwargs: Any) -> Callable[..., Any]:
     """
     Decorator to define test cases for pytest.
+
+    The `case` decorator is used to create parameterized test cases for pytest.
+    It lets the same test function run with different configurations while maintaining
+    clear test case identification.
+
+    Args:
+        name_or_gen (Union[str, Iterable[Any]]):
+            - If a string, specifies the unique identifier (ID) for the test case.
+            - If an iterable, enables the creation of generator-based test cases, allowing
+              multiple sets of parameters to be defined dynamically.
+        *args (Any): Positional arguments to be passed as parameters to the decorated test
+                    function. These are mapped to the function's required arguments.
+        **kwargs (Any): Keyword arguments to be passed as parameters to the decorated test
+                        function. These are matched by name with the function's parameters.
+                        Special keyword argument `marks` can be used to specify pytest marks
+                        (e.g., `@pytest.mark.skip`).
+                        If provided as part of an iterable `name_or_gen` parameter, the `name`
+                        keyword will be used to represent a template string for each generated test
+                        case's name (e.g., "test for {}").
+
+    Returns:
+        Callable[..., Any]: The decorated function.
+
+    Behavior:
+        - If the `name_or_gen` argument is a string, the decorator creates a single test case with
+          the specified ID.
+        - If `name_or_gen` is an iterable, it generates multiple test cases dynamically, each
+          corresponding to a combination of the iterable values and the input arguments.
+          In that case (pun intended), the `name` keyword is used to represent a template string
+          for each test cases' name (e.g., "test {}").
+
+    Advanced Features:
+        1. **Marks Support**:
+           Use the `marks` keyword in `kwargs` to attach pytest marks to a specific
+           test case. Marks can be used in the same way as with
+           [pytest marks](https://docs.pytest.org/en/stable/reference/reference.html#marks)
+
+        2. **Existing Case Wrapping**:
+           When applied to an already-decorated function, the `case` decorator unwraps its
+           parameters and arguments, allowing additional cases or modifications without conflicts.
+
+        3. **Default Argument Handling**:
+           Automatically integrates function defaults with provided arguments.
+
+    Examples:
+        >>> import pytest
+        >>> from pytest_case import case
+        >>>
+        >>> @case("valid_credentials", "root", "toor")
+        >>> @case("invalid_credentials", "user123", "password456", marks=pytest.mark.xfail)
+        >>> def test_login(username: str, password: str) -> None:
+        >>>     assert login(username, password)
+
+    Notes:
+        - The decorator validates the provided arguments to ensure compatibility with the
+          target function and raises errors for invalid or missing inputs.
+        - For complex cases, use the generator-based approach (first parameter as an iterable)
+          to simplify dynamic test creation and avoid redundant repetition.
     """
     marks = kwargs.pop(MARKS_PARAM_NAME, None) or tuple()
 

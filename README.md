@@ -64,21 +64,21 @@ def test__browser_os_compatibility(browser: str, operating_system: str) -> None:
 
 ## Using Fixtures
 - Using pytest built-in `request` fixture.
-    ```python
-    def test__with_request_fixture(request: Any) -> None:
-        fixture_value = request.getfixturevalue("fixture_name")
-        ...
-    ```
+```python
+def test__with_request_fixture(request: Any) -> None:
+    fixture_value = request.getfixturevalue("fixture_name")
+    ...
+``` 
 - Using [pytest-lazy-fixtures](https://github.com/dev-petrov/pytest-lazy-fixtures)
-    ```python
-    from pytest_case import case
-    from pytest_lazy_fixtures import lf
+```python
+from pytest_case import case
+from pytest_lazy_fixtures import lf
 
 
-    @case("Lazy Fixture Case", lf("fixture_name"))
-    def test__with_lf_cases(fixture_val: Any) -> None
-        ...
-    ```
+@case("Lazy Fixture Case", lf("fixture_name"))
+def test__with_lf_cases(fixture_val: Any) -> None
+    ...
+```
 
 # Project Roadmap:
 These are the the predicted checkpoints for this project:
